@@ -14,21 +14,38 @@ async function addNote(title) {
 
     notes.push(note)
 
-    await fs.writeFile(notesPath, JSON.stringify(notes))
+    await saveFile(notes)
     console.log(chalk.blueBright('Note was added'))
+}
+
+async function editNote(id, title) {
+  const notes = await getNotes()
+
+  const changedNotes = notes.map(note => {
+    if (note.id === id) {
+      return {
+        ...note,
+        title
+      }
+    } 
+    return note
+  }) 
+
+  await saveFile(changedNotes)
+  console.log(chalk.blueBright('Note was changed. New title: ', title))
 }
 
 async function removeNote(id) {
     const notes = await getNotes()
 
-    const filteredNotes = notes.filter(note => note.id !== +id )
+    const filteredNotes = notes.filter(note => note.id !== id )
 
     if (filteredNotes.length === notes.length) {
         return console.log(chalk.red('\n\n Note not found \n\n'))
     }
 
-    await fs.writeFile(notesPath, JSON.stringify(filteredNotes))
-    console.log(chalk.blueBright('Note was removed'))
+    await saveFile(filteredNotes)
+    console.log(chalk.blueBright('Note was removed. ID: ', id))
 
 
 }
@@ -46,6 +63,10 @@ async function printNotes() {
     console.log('\n')
 }
 
+async function saveFile(notes) {
+  await fs.writeFile(notesPath, JSON.stringify(notes))
+}
+
 module.exports = {
-    addNote, getNotes, removeNote
+    addNote, printNotes, removeNote, editNote
 }
